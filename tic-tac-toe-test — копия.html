@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>TicTacToe</title>
+</head>
+<body>
+    <table id="playingTable">
+    </table>
+    <p id = "gameOver" hidden>Who win?</p>
+    <button id = "reset" onclick="reset()" hidden>Reset</button>
+    <style type="text/css">
+        .XO {
+			width: 100%;
+            height: 100%;
+		}
+        table {
+            border-collapse: collapse;
+            border:double 4px red;
+            margin-left: auto;
+            margin-right: auto;}
+        td { 
+            text-align: center;
+            width: 100px;
+            height: 100px;
+            border:double 4px red;}
+        p#gameOver {
+            font-size: 25px;
+            text-align: center;}
+        button#reset {
+        	margin: 0px auto;
+        }
+    </style>
+    <script>
+    	let tictac = [];
+    	let rows = 3;
+    	let columns = 3;
+		initPlayGround ();
+		function initPlayGround() {
+			let playingTable = document.getElementById("playingTable");
+			playingTable.innerHTML = "";
+			for (let i = 0; i < rows; i++) {
+				tictac [i] = [];
+				trElement = document.createElement("tr");
+				let trHtml = "";
+				for (let j = 0; j < columns; j++) {
+					tictac [i] [j] = 0;	
+					trHtml = trHtml + '<td class="cell"><button class = "XO" onclick="userMove(this)" data-x="' + i + '" data-y="' + j + '" id="' + i + j + '"></button></td>';
+				}
+				trElement.innerHTML = trHtml;
+				playingTable.appendChild(trElement);
+			}
+		};
+
+		function userMove (clickedButton) {
+			if (tictac [clickedButton.getAttribute("data-x")][clickedButton.getAttribute("data-y")] == 0 ) {
+				if( isSomeoneWin() == false && isDraw() == false ) {
+					doTurn (clickedButton);
+					if(isSomeoneWin() == false && isDraw() == false ) {
+						botMove();
+					}
+				}
+			}
+		}		
+			
+        function doTurn (dataButton) {
+				let turnSymbol = getTurn(); 
+				dataButton.innerText = turnSymbol;
+				updateTictacArray (dataButton.getAttribute("data-x"),dataButton.getAttribute("data-y"), turnSymbol );
+				if (isSomeoneWin()) { 
+					let paragraphWinOrDraw = document.getElementById("gameOver");
+					let resetButton = document.getElementById("reset");
+					paragraphWinOrDraw.innerHTML = `${turnSymbol} Wins!`;
+					paragraphWinOrDraw.hidden = false;
+					resetButton.hidden = false;
+				}	
+				else if (isDraw()) { 
+					let paragraphWinOrDraw = document.getElementById("gameOver");
+					let resetButton = document.getElementById("reset");
+					paragraphWinOrDraw.innerHTML = `Draw!`;
+					paragraphWinOrDraw.hidden = false;
+					resetButton.hidden = false;
+				}
+        }
+
+		function updateTictacArray ( x, y, turnSymbolParam ) {
+			if (turnSymbolParam == "X") {
+				tictac [x][y] = 1;
+			}
+			if (turnSymbolParam == "O") {
+				tictac [x][y] = 2;
+			}
+		}
+		
+		let turn = 0;
+		function getTurn() {			
+			if (++turn % 2 == 0) {
+                return "O";
+            }
+			return "X";
+		}
+
+		function botMove () {
+			for (let x = 0; x < rows; x++){
+				for (let y = 0; y < columns; y++){
+					if (tictac [x][y] == 0){
+						let emptyButton = getEmptyButton();
+						return doTurn(emptyButton);
+					}
+				}
+			}
+		}
+
+		function getEmptyButton () {
+			let x = getRndInteger(0, rows-1);
+			let y = getRndInteger(0, columns-1);
+			if (tictac[x][y] == 0){
+				return document.getElementById(`${x}${y}`);
+			}
+			else {return getEmptyButton()};
+		}
+
+		function getRndInteger(min, max) {
+    		return Math.floor(Math.random() * (max - min + 1) ) + min;
+		}
+
+		function isSomeoneWin () {
+			for (let x = 0; x < rows; x++){
+				let gameEnded = true;
+				for (let y = 0; y < columns-1; y++){
+					if (tictac [x][y] != tictac [x][y+1] || tictac [x][y] == 0 ) {
+						gameEnded = false;
+						break;
+					}
+				}
+				if (gameEnded) {
+					return true;
+				}
+			}
+			for (let x = 0; x < columns; x++){
+				let gameEnded = true;
+				for (let y = 0; y < rows-1; y++){
+					if (tictac [y][x] != tictac [y+1][x] || tictac [y][x] == 0 ) {
+						gameEnded = false;
+						break;
+					}
+				}
+				if (gameEnded) {
+					return true;
+				}
+			}
+			let gameEnded = true;
+			for (let x = 0, y = 0; x < rows-1, y < columns-1; x++, y++ ) {
+				if (tictac [x] [y] != tictac [x + 1] [y + 1] || tictac [x + 1][y + 1] == 0) {
+					gameEnded = false;
+						break;
+				}
+			}
+			if (gameEnded) {
+				return true;
+			}
+			gameEnded = true;
+			for (let x = 0, y = 2; x < rows-1, y > 0; x++, y-- ) {
+				if (tictac [x] [y] != tictac [x + 1][y - 1] || tictac [x][y] == 0) {
+					gameEnded = false;
+						break;
+				}	
+			}
+			if (gameEnded) {
+				return true;
+			}
+			return false;
+		}
+
+		function isDraw() {
+			for (let x = 0; x < rows; x++){
+				for (let y = 0; y < columns; y++){
+					if (tictac [x][y] == 0){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		function reset () {
+			initPlayGround()
+			let paragraphWinOrDraw = document.getElementById("gameOver");
+			let resetButton = document.getElementById("reset");
+			paragraphWinOrDraw.hidden = true;
+			resetButton.hidden = true;
+			turn = 0;
+		}
+
+
+
+		/*function ( x, y, checkArrayWin) {
+			checkArrayWin = [];
+			for (x = 0; x < rows; x++) {
+				checkArrayWin {}
+			}
+
+		}
+		
+		if(tictac[0][0] == 1;tictac[0][1] == 1;tictac[0][2] == 1 ||
+			   tictac[1][0] == 1;tictac[1][1] == 1;tictac[1][2])		
+		/*
+		let multidimentionArrayForTesting = [];
+		let value = 0;
+		for ( i = 0; i < 3; i++ ) {
+			multidimentionArrayForTesting [i] = [];
+			for ( y = 0; y < 2; y++ ) {
+				value++;
+				multidimentionArrayForTesting [i] [y] = value;}
+			}
+			
+			function sum(a,b) { a + b }
+			sum(5,6)
+		*/
+        //for ( let field of tictac[1] ) {  document.write( field ); }
+    </script>
+</body>
+</html>
